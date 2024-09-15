@@ -62,7 +62,7 @@ Atsign is also great because all encryption keys are generated at the edge and a
 
 ![internet diagram](./Frame%207.png)
 
-![local diagram](./Frame%206.png.png)
+![local diagram](./Frame%206.png)
 
 ## Features
 
