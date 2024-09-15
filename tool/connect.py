@@ -76,6 +76,7 @@ def run_command(config, use_cli):
             print("No Internet connection detected. Using local method.")
             run_local_command(config, port, local_port, rh_flag, verbose)
 
+# this command assumes we have internet connection available nad we use the internet method of remote accessing the device
 def run_internet_command(config, port, local_port, rh_flag, verbose):
     print("Connecting via Internet...")
     internet_from = config.get('Internet', 'internet_from')
@@ -102,6 +103,7 @@ def run_internet_command(config, port, local_port, rh_flag, verbose):
             break
         time.sleep(5)
 
+# this function is for running the "local method" where we assume that the RVD and device that we are connecting to are on the local network
 def run_local_command(config, port, local_port, rh_flag, verbose):
     print("Running local connection...")
     air_gapped_from = config.get('AirGapped', 'air_gapped_from')

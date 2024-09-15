@@ -74,7 +74,9 @@ Atsign is also great because all encryption keys are generated at the edge and a
 
 ### Description
 
-This is the tool downloaded on the client side of things where the tunnel is initiated. The tool is a Python script that uses Atsign's NoPorts' NPT binary to establish a tunnel between the client and the server through a relay point. In our use case, the relay point is either 1. `@rv_am` which is hosted on the cloud by Atsign,  if Internet is available, or 2. `@alice` which is hosted on a Raspberry Pi and available on the local network, if Internet is not available.
+This is the tool downloaded on the client side of things where the tunnel is initiated. The tool is a Python script that uses Atsign's NoPorts' [NPT binary](https://github.com/atsign-foundation/noports/releases) to establish a tunnel between the client and the server through a relay point. In our use case, the relay point is either 1. `@rv_am` which is hosted on the cloud by Atsign,  if Internet is available, or 2. `@alice` which is hosted on a Raspberry Pi and available on the local network, if Internet is not available.
+
+`~/.local/bin/npt` is where most of the heavy encryption and tunnel establishing technology happens and that can be found [here](https://github.com/atsign-foundation/noports/releases).
 
 ### -h command
 
