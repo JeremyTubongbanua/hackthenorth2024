@@ -2,6 +2,45 @@
 
 This is the repository for my Hack The North 2024 submission.
 
+# Table of Contents
+
+1. [HackTheNorth2024](#hackthenorth2024)
+2. [Demo](#demo)
+3. [Authors](#authors)
+4. [Summary](#summary)
+5. [How It Works](#how-it-works)
+6. [Features](#features)
+   - Recovery and Compatible in Air Gapped Environment
+   - Sensitive Device is Literally Unhackable
+   - Zero Trust
+   - Secure
+   - Smart CLI Tool
+   - Utility
+   - Jump Box
+7. [Tool](#tool)
+   - [Description](#description)
+   - [-h Command](#-h-command)
+   - [--cli Command](#--cli-command)
+   - [--override-with-no-internet Command](#--override-with-no-internet-command)
+   - [--override-with-internet Command](#--override-with-internet-command)
+   - [-p Command](#-p-command)
+   - [-l Command](#-l-command)
+   - [--rh Command](#--rh-command)
+   - [-v Command](#-v-command)
+8. [Jetson Nano](#jetson-nano)
+   - [startsshnpd.sh](#startsshnpdsh)
+   - [Closing Ports](#closing-ports)
+     - [SSH 22](#ssh-22)
+     - [RDP 3389](#rdp-3389)
+   - [Sample Logs](#sample-logs)
+   - [Overall Crontab](#overall-crontab)
+9. [Pi](#pi)
+   - [1. venv](#1-venv)
+   - [2. srvd](#2-srvd)
+   - [Sample Logs](#sample-logs-1)
+   - [Tunnel Tear Down Example](#tunnel-tear-down-example)
+   - [Overall Crontab](#overall-crontab-1)
+
 ## Demo
 
 4 minute video of the tool in action - [https://youtu.be/lrKfHAbEC_E](https://youtu.be/lrKfHAbEC_E)
@@ -24,7 +63,7 @@ Atsign is also great because all encryption keys are generated at the edge and a
 ## Features
 
 - **Recovery and Compatible in Air Gapped Environment** - if the user happens to both 1. be connected to the Internet and 2. be on the same network as the Jetson Nano and relay point, then if the Internet connection is lost, we can fall back to using the local method of remote access via the local raspberry pi relay point that is within the same network as both your own device and the Jetson Nano.
-- **Sensitive Device in Literally Unhackable** - the Jetson Nano, in this case, is completely unhackable because it has no open ports, even at the level of a 192.168 address. This means that if a malicious person were to try to attack the Jetson Nano through the Internet, they can't because there are no exposed ports. Also, if a person were to come in-person to a secure facility and tried to access that device through the local network, they would also be unable to because the device has no open ports at the level of a 192.168 address.
+- **Sensitive Device is Literally Unhackable** - the Jetson Nano, in this case, is completely unhackable because it has no open ports, even at the level of a 192.168 address. This means that if a malicious person were to try to attack the Jetson Nano through the Internet, they can't because there are no exposed ports. Also, if a person were to come in-person to a secure facility and tried to access that device through the local network, they would also be unable to because the device has no open ports at the level of a 192.168 address.
 - **Zero Trust** - nor the client nor the server have to trust the central server with any secrets or keys. This hack follows a zero trust architecture because the encryption keys are at the device level. We chose to go with a Raspberry Pi, Jetson Nano, and a MacBook for our demo devices because they are all devices that are highly capable of encryption. In a typical setting, there would be some sort of central body or institution that could see all of your data and have access to it. But in this hack, the tunnel in its establishment and during its entire session is fully peer-to-peer.
 - **Secure** - the NoPorts relay point is a secure way to remote access devices because it is encrypted with keys that are on the device. This means that even if a malicious person were to try to attack the relay point, they would not be able to decrypt the traffic because the keys are on the device.
 - **Smart CLI Tool** - the Python tool that we have created is a smart CLI tool that allows for the user to easily remote access their device. We provide 1. a config file that allows users of the tool to provide the atSigns that they own. 2. We provide an easy to use interface such that all scenarios are covered and possible to be ran in 1 command with the flags that you can pick and choose. For example, `./connect.py --cli` offers a fully interactive experience and `./connect.py --override-with-no-internet -p 3389 -l 12332` allows for the user to override default settings and skip the CLI steps and do everything in one quick succession.
