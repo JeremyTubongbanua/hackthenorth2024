@@ -2,6 +2,12 @@
 
 This is the repository for my Hack The North 2024 submission.
 
+## Demo
+
+4 minute video of the tool in action - [https://youtu.be/lrKfHAbEC_E](https://youtu.be/lrKfHAbEC_E)
+
+## Authors
+
 - [Emily Lai](https://github.com/emilyirenelai)
 - [Jeremy Tubongbanua](https://github.com/JeremyTubongbanua)
 
@@ -23,46 +29,118 @@ Atsign is also great because all encryption keys are generated at the edge and a
 - **Secure** - the NoPorts relay point is a secure way to remote access devices because it is encrypted with keys that are on the device. This means that even if a malicious person were to try to attack the relay point, they would not be able to decrypt the traffic because the keys are on the device.
 - **Smart CLI Tool** - the Python tool that we have created is a smart CLI tool that allows for the user to easily remote access their device. We provide 1. a config file that allows users of the tool to provide the atSigns that they own. 2. We provide an easy to use interface such that all scenarios are covered and possible to be ran in 1 command with the flags that you can pick and choose. For example, `./connect.py --cli` offers a fully interactive experience and `./connect.py --override-with-no-internet -p 3389 -l 12332` allows for the user to override default settings and skip the CLI steps and do everything in one quick succession.
 - **Utility** - we believe our tool offers a lot of utility for those in IT or people who are constantly attending things like sensitive government machines. You can use our tool to remote access your device while still using the same remote access tool that you are familiar with. Just run the tool in the background and then you can go back to using something like Microsoft RDP. You can have the joy of doing things the way that you are comfortable with while also having the luxury of knowing that your device is secure and that you don't have to trust anyone in order to do it.
+- **Jump Box** - you can use this tool as a jump box with the `--rh` flag where you can specify the remote host that you want to connect to. Typically, this is set to localhost by default because you probably want to connect to the Jetson Nano's services. But you can also use this as a jump box to connect to other devices that are on the same network as the Jetson Nano, like the pi for example.
 
-## Demo
+## tool
 
-4 minute video of the tool in action - [https://youtu.be/lrKfHAbEC_E](https://youtu.be/lrKfHAbEC_E)
+### Description
 
-# jetson_nano
+This is the tool downloaded on the client side of things where the tunnel is initiated. The tool is a Python script that uses Atsign's NoPorts' NPT binary to establish a tunnel between the client and the server through a relay point. In our use case, the relay point is either 1. `@rv_am` which is hosted on the cloud by Atsign,  if Internet is available, or 2. `@alice` which is hosted on a Raspberry Pi and available on the local network, if Internet is not available.
+
+### -h command
+
+This is the help command that shows you all of the options you have when using the tool.
+
+```bash
+./connect.py -h
+usage: connect.py [-h] [-p P] [-l L] [--rh RH] [--override-with-internet]
+                  [--override-with-no-internet] [--cli] [-v]
+
+Run NPT commands with Internet/local connection options.
+
+options:
+  -h, --help            show this help message and exit
+  -p P                  Port number for the remote machine (default: 22)
+  -l L                  Local port number (default: 12332)
+  --rh RH               Remote host value for --rh flag (optional)
+  --override-with-internet
+                        Override to force using Internet method
+  --override-with-no-internet
+                        Override to force using local method
+  --cli                 Use CLI input instead of config file
+  -v, --verbose         Enable verbose output for the npt command
+```
+
+### --cli command
+
+The CLI (command-line interface) command allows for a rich user experience when first establishing a tunnel. There are so many settings that it may be daunting at first, but the CLI allows for the user to easily input the settings that they want.
+
+```bash
+./connect.py --cli
+Enter the port number for the -p flag (Press Enter for default 22): 22
+Enter the local port number for the -l flag (Press Enter for default 12332): 33101
+Enter the value for --rh flag (Press Enter for default "localhost"): localhost
+Internet connection detected. Using Internet method.
+Connecting via Internet...
+Connecting ... Connected
+2024-09-15 02:44:16.627594 : Requested "never" timeout: set to 365 days
+2024-09-15 02:44:16.628169 : Sending daemon feature check request
+2024-09-15 02:44:16.628216 : Fetching host and port from srvd
+```
+
+### --override-with-no-internet command
+
+By default, the tool will actually check *for you* if the Internet is available. If it is, then it is assuming that you prefer to connect via Internet. But in some scenarios, if you are both connected to the Internet and connected locally, it would be faster to connect locally. The `--override-with-no-internet` command allows for the user to force the tool to use the local method of establishing a tunnel.
+
+### --override-with-internet command
+
+The `--override-with-internet` command allows for the user to force the tool to use the Internet method of establishing a tunnel. This is useful when the user is on the same network as the Jetson Nano and the Raspberry Pi, but they want to use the Internet method of establishing a tunnel.
+
+### -p command
+
+Specify the remote port that you want to connect to on the Jetson Nano. The default is 22 because you probably want to establish a tunnel using SSH.
+
+### -l command
+
+Specify the local port that you want to connect to on the Raspberry Pi. The default is 12332 because it is a random port that we chose. This is typically an ephemeral port that is used to establish the tunnel.
+
+### --rh command
+
+Specify the remote host that you want to connect to on the Jetson Nano. The default is localhost because you probably want to connect to the Jetson Nano's services. But you can also use this as a jump box.
+
+### -v command
+
+Enable verbose output for the npt command. This is useful for debugging purposes.
+
+## jetson_nano
 
 The Jetson Nano in our hack is the device that we will be remote accessing to (either with SSH on port 22 or RDP on port 3389)
 
-## startsshnpd.sh
+### startsshnpd.sh
 
-The [startsshnpd.sh](./startsshnpd.sh) script is a simple script that will start the daemon process and run it again in case it crashes. The daemon processs will be listening . The daemon process binary can be found on Atsign's NoPorts [releases](https://github.com/atsign-foundation/noports/releases/tag/v5.6.1) (the daemon process was not written by us).
+The [startsshnpd.sh](./jetson_nano/startsshnpd.sh) script is a simple script that will start the daemon process and run it again in case it crashes. The daemon processs will be listening . The daemon process binary can be found on Atsign's NoPorts [releases](https://github.com/atsign-foundation/noports/releases/tag/v5.6.1) (the daemon process was not written by us).
 
 The daemon encryption keys would be located at `~/.atsign/keys/`
 
-## Closing Ports
+### Closing Ports
 
-### SSH 22
+#### SSH 22
 
 `sudo nano /etc/ssh/sshd_config`
 
 ```
+
 ListenAddress localhost
+
 ```
 
 `sudo service ssh restart`
 
-### RDP 3389
+#### RDP 3389
 
 `sudo nano /etc/xrdp/xrdp.ini`
 
 ```
+
 port=3389
 address=127.0.0.1
+
 ```
 
 `sudo systemctl daemon-reload`
 `sudo systemctl restart xrdp`
 
-## Sample Logs
+### Sample Logs
 
 Example of the daemon process starting up, listening for requests, then setting up a tunnel session.
 
@@ -89,7 +167,16 @@ INFO|2024-09-15 02:12:17.941683|SrvImplExec|rv stderr | rv started successfully
 INFO|2024-09-15 02:12:18.043184| sshnpd |Started rv - pid is 7652
 ```
 
-# pi
+### Overall crontab
+
+Hopefully this is what the overall crontab on the Jetson Nano looks like, so that you can get a better idea of what these scripts are doing exactly.
+
+```bash
+jeremy@jeremy-desktop:~$ crontab -l
+@reboot /bin/bash /home/jeremy/startsshnpd.sh
+```
+
+## pi
 
 The pi set up consists of two parts:
 
@@ -98,7 +185,7 @@ The pi set up consists of two parts:
 
 The keys for the srvd to use would be located at `~/.atsign/keys/`
 
-## 1. venv
+### 1. venv
 
 This is a virtual environment that we use to run several things like: 3 atServers (alice, colin, and barbara) and an atDirectory (also known as the root server) that acts as a DNS server for these tinier atServers.
 
@@ -108,9 +195,9 @@ We simply pulled the image and ran it. We also had to run `pkamLoad` to load eac
 
 But in our case, we are using [docker-compose.yaml](./docker-compose.yaml) to spin up the image and manage the image/container.
 
-The [startvenv.sh](./startvenv.sh) script is used to start the venv @reboot via crontab.
+The [startvenv.sh](./pi/startvenv.sh) script is used to start the venv @reboot via crontab.
 
-## 2. srvd
+### 2. srvd
 
 This is a simple socket connector server that Atsign provides as part of their [releases](https://github.com/atsign-foundation/noports/releases/tag/v5.6.1). Essentially, when a NPT request is made by our client, the SRVD process will bind to two ports and simply relay the encrypted traffic between the two ports. Since it is encrypted with keys that are on the device, it is unable to decrypt the traffic. You can kind of think about it as passing on "garbage" that it can't do anything useful with. This is important because it means that although the raspberry pi is an attackable device, there would be nothing useful on it that a malicious person could do with it.
 
@@ -118,7 +205,7 @@ For this hack, we are using v5.6.1 of the SRVD binary that can be found in their
 
 Below are some sample logs of a successful NPT tunnel being created. You can see by this line "`2024-09-15 01:57:41.030420 | serverToServer | Bound ports A: 42283, B: 45235`" that two ephemeral ports are bound to the two sides of the tunnel. The client will then use these ports to connect to the tunnel.
 
-The [startsrvd.sh](./startsrvd.sh) script is used to start the srvd @reboot via crontab.
+The [startsrvd.sh](./pi/startsrvd.sh) script is used to start the srvd @reboot via crontab.
 
 ### Sample Logs
 
@@ -173,7 +260,7 @@ Tunnel tear down example
 2024-09-15 02:00:56.000888 | SocketConnector | Destroying socket on far side (A)
 ```
 
-# overall crontab
+### Overall crontab
 
 This is what the overall crontab on the raspberry pi looks like, so that you can get a better idea of what these scripts are doing exactly.
 
