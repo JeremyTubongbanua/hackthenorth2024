@@ -60,6 +60,10 @@ Our hack involves a Python tool that utilizes Atsign's NoPorts as a core depende
 
 Atsign is also great because all encryption keys are generated at the edge and all traffic is encrypted with them. So no central server can see any of the very top secret things that a person may be doing while remote accessing another machine.
 
+![internet diagram](./Frame%207.png)
+
+![local diagram](./Frame%206.png.png)
+
 ## Features
 
 - **Recovery and Compatible in Air Gapped Environment** - if the user happens to both 1. be connected to the Internet and 2. be on the same network as the Jetson Nano and relay point, then if the Internet connection is lost, we can fall back to using the local method of remote access via the local raspberry pi relay point that is within the same network as both your own device and the Jetson Nano.
