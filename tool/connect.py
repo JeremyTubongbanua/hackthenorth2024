@@ -24,17 +24,6 @@ def load_config(config_file):
     return config
 
 
-def get_custom_flags(args, config):
-    port = args.p if args.p else input(f"Enter the port number for the -p flag (default {config.get(
-        'Internet', 'internet_remote_port')}): ") or config.get('Internet', 'internet_remote_port')
-    local_port = args.l if args.l else input(f"Enter the local port number for the -l flag (default {
-                                             config.get('Internet', 'internet_local_port')}): ") or config.get('Internet', 'internet_local_port')
-    rh_flag = args.rh if args.rh else input(
-        f"Enter the value for --rh flag (optional, default \"localhost\"): ") or "localhost"
-
-    return port, local_port, rh_flag
-
-
 def run_command(config, use_cli):
     parser = argparse.ArgumentParser(
         description="Run NPT commands with Internet/local connection options.")
@@ -54,19 +43,36 @@ def run_command(config, use_cli):
     args = parser.parse_args()
 
     if use_cli:
-        port, local_port, rh_flag = get_custom_flags(args, config)
+        # handle the possiblilty of the user using it like `./connect.py --cli -p 22` -> in this scenario, the user is providing the remote port but not the local port, and maybe we could still ask
+        # something like `./connect.py --cli -p 22 -l 12332 --rh localhost would be the same as `./connect.py -p 22 -l 12332 --rh localhost`, which is an interesting case to handle, but is intended
+        port = args.p
+        if not port:
+            port = input(
+                "Enter the port number for the -p flag (Press Enter for default 22): ") or "22"
+        local_port = args.l
+        if not local_port:
+            local_port = input(
+                "Enter the local port number for the -l flag (Press Enter for default 12332): ") or "12332"
+        rh_flag = args.rh
+        if not rh_flag:
+            rh_flag = input(
+                "Enter the value for --rh flag (Press Enter for default \"localhost\"): ") or "localhost"
     else:
-        port, local_port, rh_flag = args.p or config.get('Internet', 'internet_remote_port'), \
-            args.l or config.get('Internet', 'internet_local_port'), \
-            args.rh or "localhost"
+        # default to config.ini values
+        port = args.p or config.get('Internet', 'internet_remote_port')
+        local_port = args.l or config.get('Internet', 'internet_local_port')
+        rh_flag = args.rh or config.get('Internet', 'internet_remote_host')
 
     if args.override_with_internet:
+        # in this 1st scenario, the user is forcing the internet method
         print("Override detected: Forcing Internet method.")
         run_internet_command(config, port, local_port, rh_flag)
     elif args.override_with_no_internet:
+        # in this 2nd scenario, the user is forcing the local method, we shall assume that the user is on the same network as the Jetson Nano
         print("Override detected: Forcing local method.")
         run_local_command(config, port, local_port, rh_flag)
     else:
+        # in this 3rd scenario, we shall check if they are connected to the Internet ourselves
         if check_internet():
             print("Internet connection detected. Using Internet method.")
             run_internet_command(config, port, local_port, rh_flag)
@@ -84,7 +90,7 @@ def run_internet_command(config, port, local_port, rh_flag):
     internet_device = config.get('Internet', 'internet_device')
 
     command = f"~/.local/bin/npt -f {internet_from} -t {internet_to} -r {
-        internet_rvd} -d {internet_device} -K -T 0 -p {port} -l {local_port} -v"
+        internet_rvd} -d {internet_device} -K -T 0 -p {port} -l {local_port}"
     if rh_flag:
         command += f" --rh {rh_flag}"
     subprocess.run(command, shell=True)
@@ -108,7 +114,7 @@ def run_local_command(config, port, local_port, rh_flag):
     air_gapped_root_domain = config.get('AirGapped', 'air_gapped_root_domain')
 
     command = f"~/.local/bin/npt -f {air_gapped_from} -t {air_gapped_to} -r {air_gapped_rvd} -d {
-        air_gapped_device} --root-domain {air_gapped_root_domain} -K -T 0 -p {port} -l {local_port} -v"
+        air_gapped_device} --root-domain {air_gapped_root_domain} -K -T 0 -p {port} -l {local_port}"
     if rh_flag:
         command += f" --rh {rh_flag}"
     subprocess.run(command, shell=True)
